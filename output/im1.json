@@ -1,0 +1,14 @@
+[
+  {
+    "name": "f1.jpg",
+    "tipo": "jpg",
+    "dimensiones": "1116x628",
+    "descripcion": "La imagen muestra tres coches de Fórmula 1 compitiendo en una pista mojada, con vapor saliendo de los neumáticos. Los coches están uno detrás del otro, con el coche negro en primer plano, el coche verde en el medio y el coche rojo detrás. Todos los coches están en movimiento, y la pista está mojada por la lluvia."
+  },
+  {
+    "name": "im1.jpg",
+    "tipo": "jpg",
+    "dimensiones": "1600x1179",
+    "descripcion": "Un gato atigrado naranja está en cuclillas sobre un fondo blanco. El gato está mirando hacia la izquierda de la imagen. El gato tiene el pelo naranja con rayas negras. El gato tiene los ojos marrones y las orejas rosadas. El gato tiene la cola levantada."
+  }
+]

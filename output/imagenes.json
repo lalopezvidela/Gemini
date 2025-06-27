@@ -1,0 +1,14 @@
+[
+  {
+    "name": "f1.jpg",
+    "tipo": "jpg",
+    "dimensiones": "1116x628",
+    "descripcion": "Carreras, lluvia, velocidad.\n\nLa imagen muestra tres coches de Fórmula 1 compitiendo en una pista mojada por la lluvia. Los coches están muy juntos, con el coche negro en primer plano, seguido por uno verde azulado y luego uno rojo. Hay mucha agua y vapor levantándose de las ruedas, lo que crea una atmósfera dramática y de alta velocidad."
+  },
+  {
+    "name": "im1.jpg",
+    "tipo": "jpg",
+    "dimensiones": "1600x1179",
+    "descripcion": "Gato naranja curioso.\n\nUn gato naranja con rayas está en una pose de acecho sobre un fondo blanco."
+  }
+]

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Subir Imagen - Wireframe</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+</head>
+<body>
+  <div class="wireframe-container">
+    <div class="wireframe-grid">
+      <div class="left-panel">
+        <div class="form-group">
+          <label for="imgInput">Selecciona una imagen:</label>
+          <input type="file" id="imgInput" accept="image/*">
+        </div>
+        <div class="form-group">
+          <button id="uploadBtn">SUBIR</button>
+        </div>
+      </div>
+      <div class="right-panel">
+        <div class="form-group">
+          <label for="jsonOutput">JSON generado:</label>
+          <textarea id="jsonOutput" rows="5" readonly></textarea>
+        </div>
+        <div class="form-group">
+          <label for="descOutput">Descripción de la imagen:</label>
+          <textarea id="descOutput" rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const imgInput = document.getElementById('imgInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const jsonOutput = document.getElementById('jsonOutput');
+    const descOutput = document.getElementById('descOutput');
+
+    let imageFile = null;
+
+    imgInput.addEventListener('change', (e) => {
+      imageFile = e.target.files[0];
+      jsonOutput.value = '';
+      descOutput.value = '';
+    });
+
+    uploadBtn.addEventListener('click', () => {
+      if (!imageFile) {
+        alert('Por favor selecciona una imagen.');
+        return;
+      }
+      const name = imageFile.name;
+      const tipo = name.split('.').pop();
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const img = new Image();
+        img.onload = function() {
+          const dimensiones = `${img.width}x${img.height}`;
+          // Convertir a base64
+          const base64 = ev.target.result.split(',')[1];
+          const json = {
+            name: name,
+            tipo: tipo,
+            dimensiones: dimensiones,
+            base64: base64
+          };
+          jsonOutput.value = JSON.stringify({
+            name: name,
+            tipo: tipo,
+            dimensiones: dimensiones
+          }, null, 2);
+
+          // Llamar a la API para obtener la descripción
+          fetch('http://127.0.0.1:5000/api/describe-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ base64: base64, name: name, tipo: tipo, dimensiones: dimensiones })
+          })
+          .then(res => res.json())
+          .then(data => {
+            descOutput.value = data.descripcion || '';
+          })
+          .catch(() => {
+            descOutput.value = 'Error al obtener descripción';
+          });
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(imageFile);
+    });
+  </script>
+</body>
+</html>

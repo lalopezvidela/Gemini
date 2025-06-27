@@ -1,0 +1,73 @@
+import os
+import json
+import time
+from PIL import Image
+import google.generativeai as genai
+from google.api_core import exceptions
+
+# Configurar la API key
+from dotenv import load_dotenv
+load_dotenv()
+API_KEY = os.getenv("GOOGLE_API_KEY")
+genai.configure(api_key=API_KEY)
+
+# Obtener el modelo
+# model = genai.GenerativeModel('gemini-2.5-flash')
+model = genai.GenerativeModel('gemini-2.5-flash-lite-preview-06-17')
+
+# Lista de imágenes a procesar
+image_paths = ["img/f1.jpg", "img/im1.jpg"]
+# leer todos los archivos de la carpeta img
+results = []
+
+for img_path in image_paths:
+    # Obtener nombre, tipo y dimensiones
+    name = os.path.basename(img_path)
+    tipo = name.split('.')[-1]
+    with Image.open(img_path) as img:
+        width, height = img.size
+        dimensiones = f"{width}x{height}"
+        
+        max_retries = 3
+        retry_delay = 60  # segundos
+        
+        for attempt in range(max_retries):
+            try:
+                response = model.generate_content(
+                    [
+                        img,
+                        "Describe brevemente el contenido de esta imagen utilizando datos objetivos y concretos."
+                    ],
+                    generation_config={
+                        "temperature": 0.1,  # Temperatura baja para respuestas más determinísticas
+                        "top_p": 0.1,        # Reducir variabilidad
+                        "top_k": 16,         # Limitar selección de tokens
+                        "max_output_tokens": 100  # Limitar longitud de respuesta
+                    }
+                )
+                descripcion = response.text.strip()
+                break
+            except exceptions.ResourceExhausted as e:
+                if attempt == max_retries - 1:
+                    print(f"Error: Cuota excedida después de {max_retries} intentos.")
+                    descripcion = "Error: No se pudo obtener la descripción debido a límites de cuota"
+                else:
+                    print(f"Cuota excedida. Esperando {retry_delay} segundos...")
+                    time.sleep(retry_delay)
+            except Exception as e:
+                print(f"Error inesperado: {str(e)}")
+                descripcion = f"Error: {str(e)}"
+                break
+    
+    # Agregar resultado
+    results.append({
+        "name": name,
+        "tipo": tipo,
+        "dimensiones": dimensiones,
+        "descripcion": descripcion
+    })
+
+# Guardar el JSON en la carpeta output
+os.makedirs("output", exist_ok=True)
+with open("output/imagenes.json", "w", encoding="utf-8") as f:
+    json.dump(results, f, ensure_ascii=False, indent=2)
