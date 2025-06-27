@@ -50,8 +50,8 @@ def describe_image():
                 response = model.generate_content(
                     [
                         {
-                            "inlineData": {
-                                "mimeType": "image/png",
+                            "inline_data": {
+                                "mime_type": "image/png",
                                 "data": img_base64
                             }
                         },
