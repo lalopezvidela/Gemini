@@ -13,14 +13,22 @@
           <label for="imgInput">Selecciona una imagen:</label>
           <input type="file" id="imgInput" accept="image/*">
         </div>
+        <!-- Previsualización de imagen -->
+        <div class="form-group" id="previewGroup" style="display:none;">
+          <label>Vista previa:</label>
+          <img id="imgPreview" src="" alt="Vista previa" style="max-width:100%;max-height:200px;border:1px solid #b6d0f7;border-radius:4px;">
+        </div>
         <div class="form-group">
           <button id="uploadBtn">SUBIR</button>
         </div>
       </div>
       <div class="right-panel">
+        <!-- Mostrar datos en vez de textarea JSON -->
         <div class="form-group">
-          <label for="jsonOutput">JSON generado:</label>
-          <textarea id="jsonOutput" rows="5" readonly></textarea>
+          <label>Datos de la imagen:</label>
+          <div id="jsonData" style="background:#eaf3fb;border:1px solid #b6d0f7;border-radius:5px;padding:9px;font-family:'Fira Mono',monospace;color:#1a2b3c;min-height:60px;">
+            <!-- Aquí se mostrarán los datos -->
+          </div>
         </div>
         <div class="form-group">
           <label for="descOutput">Descripción de la imagen:</label>
@@ -32,15 +40,31 @@
   <script>
     const imgInput = document.getElementById('imgInput');
     const uploadBtn = document.getElementById('uploadBtn');
-    const jsonOutput = document.getElementById('jsonOutput');
+    const jsonData = document.getElementById('jsonData');
     const descOutput = document.getElementById('descOutput');
+    const imgPreview = document.getElementById('imgPreview');
+    const previewGroup = document.getElementById('previewGroup');
 
     let imageFile = null;
+    let lastData = {};
 
     imgInput.addEventListener('change', (e) => {
       imageFile = e.target.files[0];
-      jsonOutput.value = '';
+      // Limpiar campos
+      jsonData.innerHTML = '';
       descOutput.value = '';
+      // Previsualización
+      if (imageFile) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          imgPreview.src = ev.target.result;
+          previewGroup.style.display = 'block';
+        };
+        reader.readAsDataURL(imageFile);
+      } else {
+        imgPreview.src = '';
+        previewGroup.style.display = 'none';
+      }
     });
 
     uploadBtn.addEventListener('click', () => {
@@ -57,17 +81,13 @@
           const dimensiones = `${img.width}x${img.height}`;
           // Convertir a base64
           const base64 = ev.target.result.split(',')[1];
-          const json = {
-            name: name,
-            tipo: tipo,
-            dimensiones: dimensiones,
-            base64: base64
-          };
-          jsonOutput.value = JSON.stringify({
-            name: name,
-            tipo: tipo,
-            dimensiones: dimensiones
-          }, null, 2);
+          lastData = { name, tipo, dimensiones };
+          // Mostrar datos en el panel derecho
+          jsonData.innerHTML =
+            `<b>Nombre:</b> ${name}<br>` +
+            `<b>Tipo:</b> ${tipo}<br>` +
+            `<b>Dimensiones:</b> ${dimensiones}<br>` +
+            `<b>Descripción:</b> <span id="descSpan">Cargando...</span>`;
 
           // Llamar a la API para obtener la descripción
           fetch('http://127.0.0.1:5000/api/describe-image', {
@@ -78,14 +98,23 @@
           .then(res => res.json())
           .then(data => {
             descOutput.value = data.descripcion || '';
+            // Actualizar descripción en el panel derecho
+            document.getElementById('descSpan').textContent = data.descripcion || '';
           })
           .catch(() => {
             descOutput.value = 'Error al obtener descripción';
+            document.getElementById('descSpan').textContent = 'Error al obtener descripción';
           });
         };
         img.src = ev.target.result;
       };
       reader.readAsDataURL(imageFile);
+    });
+
+    // Si el usuario edita la descripción, actualizar el panel derecho
+    descOutput.addEventListener('input', () => {
+      const descSpan = document.getElementById('descSpan');
+      if (descSpan) descSpan.textContent = descOutput.value;
     });
   </script>
 </body>
